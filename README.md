@@ -1,0 +1,2 @@
+# newsReq
+CloudComputing Project
