@@ -27,8 +27,7 @@ es = Elasticsearch(
   )
 
 # es.indices.delete(index='news', ignore=[400, 404])
-
-# time.sleep(30)
+# time.sleep(10)
 
 es.indices.create(index='news', ignore=400)
 print (es.info())
@@ -70,15 +69,19 @@ for category in sources.keys():
             article[v] = article[v].encode('ascii', 'ignore')
         article["category"] = str(category)
         article["source"] = str(source)
-        #print "{}\n\n".format(article)
 
         ## add indexing to ES
         try:
-          res = es.index(index="news", doc_type='article', body=article)
-          print "{}\n\n".format(article)
+          dup = es.get(index="news", doc_type='article', id=article["title"])
+          print("Article "
         except:
-          print("Error adding to db", sys.exc_info()[0])
-          pass
+          print("Article not in db, adding article", sys.exc_info()[0])
+          try:
+            res = es.index(index="news", doc_type='article', id=article["title"], body=article)
+            print "{}\n\n".format(article)
+          except:
+            print("Error adding to db", sys.exc_info()[0])
+            pass
 
 
 print(count)
