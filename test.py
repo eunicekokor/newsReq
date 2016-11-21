@@ -19,10 +19,17 @@ conn = boto.sqs.connect_to_region(
      aws_access_key_id=YOUR_ACCESS_KEY,
      aws_secret_access_key=YOUR_SECRET_KEY)
 # print conn.get_all_queues()
-q = conn.get_queue('newsyQueue')
+# q = conn.get_queue('newsyQueue') #non-fifo
+q = conn.get_queue('newsQueue.fifo') #fifo
+
 print (q)
 m = Message()
 m.set_body('Reader started at this point')
+# m.set_group_id('lalala')
+# q.set_attributes(
+#   Attributes={
+#   "ContentBasedDeduplication": True
+#   })
 resp = q.write(m)
 print ("added message, got {}").format(resp)
 
