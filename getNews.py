@@ -49,6 +49,8 @@ sources = {
 count = 0
 for category in sources.keys():
   source_list = sources[category]
+
+  # For each source, query News API for articles
   for source in source_list:
     request_url = "https://newsapi.org/v1/articles?source={source}&apiKey={apiKey}".format(source=source, apiKey=apiKey)
     try:
@@ -64,6 +66,8 @@ for category in sources.keys():
       count += len(article_list)
       print "Articles for {} in the category of {}".format(source, category)
       for article in article_list:
+
+        # Remove unreadable characters in article fields and add category, src
         for v in article.keys():
           if article[v]:
             article[v] = article[v].encode('ascii', 'ignore')
