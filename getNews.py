@@ -3,6 +3,7 @@ import json
 import time
 from requests_aws4auth import AWS4Auth
 from elasticsearch import Elasticsearch, RequestsHttpConnection
+import sys
 
 apiKey = "8f37248639844a2294dbe1af7c6f3b24"
 
@@ -25,6 +26,10 @@ es = Elasticsearch(
   connection_class=RequestsHttpConnection
   )
 
+# es.indices.delete(index='news', ignore=[400, 404])
+
+# time.sleep(30)
+
 es.indices.create(index='news', ignore=400)
 print (es.info())
 
@@ -42,7 +47,7 @@ sources = {
 # When we're building up our news db, our request will query each category
 # and request articles from each source. Sort by latest, popular, and top
 # Example API Request -->
-
+count = 0
 for category in sources.keys():
   source_list = sources[category]
   for source in source_list:
@@ -56,31 +61,25 @@ for category in sources.keys():
     json_data = resp.json()
     if json_data.get('articles'):
       article_list = json_data['articles']
+      print("Number of Articles", len(article_list), "total", count)
+      count += len(article_list)
       print "Articles for {} in the category of {}".format(source, category)
       for article in article_list:
+        for v in article.keys():
+          if article[v]:
+            article[v] = article[v].encode('ascii', 'ignore')
         article["category"] = str(category)
         article["source"] = str(source)
         #print "{}\n\n".format(article)
 
         ## add indexing to ES
         try:
-          in_db_result = es.search(index='news',doc_type="article",body={
-            "query": {
-              "match": {
-                "title": article['title']
-              }
-            }
-          })
-          duplicate = json.dumps(in_db_result['hits']['hits'])
-          print("Duplicate", duplicate)
-          if(len(duplicate) == 0):
-            res = es.index(index="news", doc_type='article', body=article)
-            print("Adding to db")
-            print "{}\n\n".format(article)
-          else:
-            print("Skipped adding to db")
+          res = es.index(index="news", doc_type='article', body=article)
+          print "{}\n\n".format(article)
         except:
-          print("Error adding to db")
+          print("Error adding to db", sys.exc_info()[0])
           pass
 
+
+print(count)
 
