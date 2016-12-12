@@ -1,4 +1,4 @@
-To view all values available mappings in elasticsearch
+#To view all values available mappings in elasticsearch
 
 `GET /_all/_mapping`
 
