@@ -1,24 +1,25 @@
+import os
 import requests
 import json
 import time
 from requests_aws4auth import AWS4Auth
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 import sys
-import certifi
-from config import *
 
 REGION = "us-west-2"
 
-awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, REGION, 'es')
-print ("The environment is working, your access key is: {}".format(YOUR_ACCESS_KEY))
-print ("The environment is working, your secret key is: {}".format(YOUR_SECRET_KEY))
+YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
+YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
 
-host = 'search-news-req-rdi65wkzrj6inpmxnjhftkl5fi.us-west-2.es.amazonaws.com'
+awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, "us-east-1", 'es')
+
+host = os.environ['ES_URL']
+port = os.environ['ES_PORT']
 
 es = Elasticsearch(
   hosts=[{
     'host': host,
-    'port': 443,
+    'port': int(port),
   }],
   http_auth=awsauth,
   use_ssl=True,
