@@ -47,7 +47,7 @@ class FacebookSignIn(OAuthSignIn):
 
     def authorize(self):
         return redirect(self.service.get_authorize_url(
-            scope='email',
+            scope='email,public_profile,user_likes',
             response_type='code',
             redirect_uri=self.get_callback_url())
         )
@@ -60,13 +60,16 @@ class FacebookSignIn(OAuthSignIn):
                   'grant_type': 'authorization_code',
                   'redirect_uri': self.get_callback_url()}
         )
-        me = oauth_session.get('me?fields=id,email').json()
+        me = oauth_session.get('me?fields=id,email,first_name,last_name').json()
+        likes = oauth_session.get('me/likes?limit=3').json()
+        print(likes)
+        #Likes info: https://www.sammyk.me/optimizing-request-queries-to-the-facebook-graph-api
+        print(me)
         return (
             'facebook$' + me['id'],
-            me.get('email').split('@')[0],  # Facebook does not provide
-                                            # username, so the email's user
-                                            # is used instead
-            me.get('email')
+            me.get('email'),
+            me.get('email'),
+            me.get('last_name'),
         )
 
 
