@@ -11,6 +11,7 @@ from flask import url_for
 from requests_aws4auth import AWS4Auth
 from flask_oauth import OAuth
 from oauth import OAuthSignIn
+from facebook_post import facebook_post
 
 YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
 YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
@@ -66,17 +67,36 @@ def oauth_authorize(provider):
     return oauth.authorize()
 
 
+
+def get_posts_as_text(posts_json):
+    posts = posts_json['data']
+    for post in posts:
+        try:
+            new = facebook_post(post)
+            #print(post)
+            #print(post['message'])
+        except:
+            #can't view shared posts
+            pass
+
+
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
     oauth = OAuthSignIn.get_provider(provider)
     social_id, username, email, user_likes, posts = oauth.callback()
-    print(user_likes)
-    print(email)
     if social_id is None:
         flash('Authentication failed.')
         return redirect(url_for('index'))
+    else:
+        user_posts = []
+        for post in posts['data']:
+            try:
+                user_posts.append(facebook_post(post))
+            except:
+                pass
+        print(user_posts[5].article_text)
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
         user = User(social_id=social_id, nickname=username, email=email)
