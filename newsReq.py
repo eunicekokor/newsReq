@@ -2,8 +2,6 @@ import os
 from flask import Flask, render_template, session
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 import json
-
-from flask.ext.login import current_user
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, current_user
 from flask import flash
@@ -73,7 +71,7 @@ def oauth_callback(provider):
     if not current_user.is_anonymous:
         return redirect(url_for('index'))
     oauth = OAuthSignIn.get_provider(provider)
-    social_id, username, email, user_likes = oauth.callback()
+    social_id, username, email, user_likes, posts = oauth.callback()
     print(user_likes)
     print(email)
     if social_id is None:
