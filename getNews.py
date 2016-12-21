@@ -11,10 +11,13 @@ REGION = "us-west-2"
 YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
 YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
 
+
 awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, "us-east-1", 'es')
 
 host = os.environ['ES_URL']
 port = os.environ['ES_PORT']
+# host = "127.0.0.1"
+# port = 8000
 
 es = Elasticsearch(
   hosts=[{
