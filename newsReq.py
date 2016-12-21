@@ -1,4 +1,6 @@
 import os
+
+import requests
 from flask import Flask, render_template, session
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 import json
@@ -79,6 +81,16 @@ def get_posts_as_text(posts_json):
             #can't view shared posts
             pass
 
+def build_post_string(user_posts):
+    giant_string = ""
+
+    for post in user_posts:
+        if post.article_text:
+            temp_string = " ".join(str(x.encode("utf-8")) for x in post.article_text)
+            giant_string += temp_string
+            giant_string += " "
+
+    return giant_string
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
@@ -96,7 +108,10 @@ def oauth_callback(provider):
                 user_posts.append(facebook_post(post))
             except:
                 pass
-        print(user_posts[5].article_text)
+        post_string = build_post_string(user_posts)
+        send_data = {'content': post_string}
+        requests.post("http://127.0.0.1:5000/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
         user = User(social_id=social_id, nickname=username, email=email)
