@@ -18,9 +18,9 @@ from facebook_post import facebook_post
 from config import *
 import sns_receiver as sns
 
-YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
-YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
-
+# YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
+# YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
+ES_PORT = 443
 oauth = OAuth()
 
 app = Flask(__name__)
@@ -40,11 +40,12 @@ app.config['OAUTH_CREDENTIALS'] = {
 db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
+INDEX='test-index'
 
 awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-east-1", 'es')
 
 host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
-port =  os.environ['ES_PORT']
+# port =  os.environ['ES_PORT']
 
 es = Elasticsearch(
   hosts=[{
@@ -71,7 +72,7 @@ def load_user(id):
 
 @app.route('/')
 def index():
-    return render_template('index.html', articles = articles)
+    return render_template('index.html')
 
 
 @app.route('/logout')
@@ -119,7 +120,7 @@ def get_articles_from_elasticsearch(topics):
     articles = []#each includes a title and a link
     print("getting articles")
     for topic in topics:
-        res = es.search(size=50, index="news", doc_type="article", body={
+        res = es.search(size=50, index=INDEX, doc_type="article", body={
             "query": {
                 "match": {
                     "topicNo": str(topic)
@@ -132,6 +133,24 @@ def get_articles_from_elasticsearch(topics):
         articles.append(("title", results[index1]['_source']['text']))
         articles.append(("title", results[index2]['_source']['text']))
     return articles
+
+def get_articles_from_elasticsearch():
+  articles=[]
+  print("getting al articles")
+  res = es.search(size=50, index=INDEX, doc_type="article", body={
+            "query": {
+                "match": {
+                    "topicNo": str(topic)
+                }
+            }
+        })
+  results = res['hits']['hits']
+  max_index = len(results)
+  index1, index2 = get_rand_indexes(max_index)
+  articles.append(("title", results[index1]['_source']['text']))
+  articles.append(("title", results[index2]['_source']['text']))
+  return articles
+
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
@@ -155,7 +174,8 @@ def oauth_callback(provider):
         #topics = retrieve them from response somehow
         topics = [4,6,7,8,5]
 
-        articles = get_articles_from_elasticsearch(topics)
+        # articles = get_articles_from_elasticsearch(topics)
+        articles = get_articles_from_elasticsearch()
 
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
@@ -167,7 +187,7 @@ def oauth_callback(provider):
 
 @app.route('/es')
 def test_es():
-    result = es.search(index='news',doc_type="article",body={
+    result = es.search(index=INDEX,doc_type="article",body={
         "query": { "match_all": {} },
         "sort": { "publishedAt": { "order": "desc" }
         }
@@ -190,4 +210,4 @@ def notification():
 if __name__ == '__main__':
     db.create_all()
     app.debug = True
-    app.run(port=8000)
+    app.run(port=8888)
