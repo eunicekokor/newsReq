@@ -55,7 +55,16 @@ def notification(req):
       article['source'] = msg['source']
       article['category'] = msg['category']
 
-      res = es.index(index="test-index", doc_type='article', body=msg)
+      try:
+        dup = es.get(index="test-index", doc_type='article', id=article["title"])
+        print("DUPLICATE, SKIPPED ")
+      except:
+        try:
+          print("Article not in db, adding article")
+          res = es.index(index="test-index", doc_type='article', body=msg)
+        except:
+              print("Error adding to elasticsearch", sys.exc_info()[1])
+              pass
 
       print("INDEXED:")
       print(res)

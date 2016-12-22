@@ -11,7 +11,7 @@ import sns_receiver as sns
 
 application = Flask(__name__)
 
-
+# NOTE I moved this to getNews.py, so if you run getNews.py it should work for SNS
 @application.route('/notification', methods=['GET','POST'])
 def notification():
   print(request.method)
