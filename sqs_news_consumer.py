@@ -28,8 +28,9 @@ def sns_connect():
     subscriber = client.subscribe(
         TopicArn=topicarn,
         Protocol='http' ,
+        Endpoint='http://4a40829d.ngrok.io/notification'
         #Endpoint='http://127.0.0.1:5000/notification' 108.6.175.225
-        Endpoint='http://c725a958.ngrok.io'
+        # Endpoint='http://c725a958.ngrok.io'
         # Endpoint = 'flask-env.5gi2k9npmn.us-west-2.elasticbeanstalk.com/notification'
     )
     print(("Subscriber: {}\n").format(subscriber))

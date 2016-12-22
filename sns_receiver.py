@@ -8,45 +8,20 @@ import ast
 from requests_aws4auth import AWS4Auth
 
 REGION="us-west-2"
-
-# es = Elasticsearch(
-#   hosts=[{
-#     'host': host,
-#     'port': 443,
-#   }],
-#   http_auth=awsauth,
-#   use_ssl=True,
-#   connection_class=RequestsHttpConnection
-#   )
-# es.indices.create(index='tweet-sqs', ignore=400)
-
-# print (es.info())
-
-# req = {
-#   'Type' : 'Notification',
-#   'Message' : {
-#     'text' : "tweet here about clinton or whatever",
-#     'coordinates' : (-30.0, 45.9),
-#     'sentiment' : 'positive'
-#   }
-# }
-# YOUR_ACCESS_KEY="AKIAJ7GFBSYVCRWBQ72A"
-# YOUR_SECRET_KEY="regiCxIQefPYZrUd3ZJXUD52IlZzYydOHQkWNrnQ"
-
 awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, REGION, 'es')
-host = "search-tweet-trends-euni-bv5nxkgvthtwhgtrq6grokr4oi.us-west-2.es.amazonaws.com"
+# host = "search-tweet-trends-euni-bv5nxkgvthtwhgtrq6grokr4oi.us-west-2.es.amazonaws.com"
 # host = "search-tweet-trends-24sebrx4nnqqvhbh3c737rotcq.us-west-2.es.amazonaws.com"
 global es
 es = Elasticsearch(
   hosts=[{
-    'host': host,
+    'host': ES_HOST,
     'port': 443,
   }],
   http_auth=awsauth,
   use_ssl=True,
   connection_class=RequestsHttpConnection
   )
-es.indices.create(index='test-index', ignore=400)
+es.indices.create(index='article-index', ignore=400)
 
 print (es.info())
 
@@ -67,16 +42,20 @@ def notification(req):
   else:
     if (req["Type"] == 'Notification'):
       msg = json.loads(req['Message'])
-      print("Notification message: {}\n".format(msg))
+      print("\nNotification message: {}\n".format(msg))
 
-      tweet = {}
+      article = {}
 
-      tweet['text'] = msg['text']
-      tweet['name'] = msg['name']
-      tweet['coordinates'] = msg['coordinates']
-      tweet['sentiment'] = msg['sentiment']
+      article['url'] = msg['url']
+      article['title'] = msg['title']
+      article['description'] = msg['description']
+      article['urlToImage'] = msg['urlToImage']
+      article['author'] = msg['author']
+      article['publishedAt'] = msg['publishedAt']
+      article['source'] = msg['source']
+      article['category'] = msg['category']
 
-      res = es.index(index="test-index", doc_type='tweet', body=tweet)
+      res = es.index(index="test-index", doc_type='article', body=msg)
 
       print("INDEXED:")
       print(res)

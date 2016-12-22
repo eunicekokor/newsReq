@@ -14,8 +14,6 @@ import sns_receiver as sns
 application = Flask(__name__)
 
 
-
-
 @application.route('/notification', methods=['GET','POST'])
 def notification():
   print(request.method)
@@ -36,7 +34,7 @@ def notification():
     try:
 
       # data = request.args['data']
-      # print(data)
+      # prinft(data)
 
       # r = requests.get(url)
       # print(r)
