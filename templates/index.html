@@ -1,19 +1,26 @@
 <html>
     <head>
-        <title>OAuth Flask Demo</title>
+        <title>ANF</title>
     </head>
     <body>
-        <h1>OAuth Demo</h1>
+        <h1>Awesome News Filter</h1>
         {% for message in get_flashed_messages() %}
             <p><b>Error</b>: {{ message }}</p>
         {% endfor %}
         {% if current_user.is_authenticated %}
             <h2>Hi, {{ current_user.nickname }}!</h2>
+
+            {% for article in articles %}
+            <div>
+                <h3>{{ article[0] }}</h3>
+                <p>{{ article[1] }}</p>
+            </div>
+            {% endfor %}
+
             <p><a href="{{ url_for('logout') }}">Logout</a></p>
         {% else %}
-            <h2>I don't know you!</h2>
+            <h2>Please Login to Facebook</h2>
             <p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>
-            <p><a href="{{ url_for('oauth_authorize', provider='twitter') }}">Login with Twitter</a></p>
         {% endif %}
     </body>
 </html>

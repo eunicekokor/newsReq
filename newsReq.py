@@ -1,4 +1,5 @@
 import os
+import random
 
 import requests
 from flask import Flask, render_template, session
@@ -38,6 +39,22 @@ db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
 
+awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-east-1", 'es')
+
+host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
+port =  os.environ['ES_PORT']
+
+es = Elasticsearch(
+  hosts=[{
+    'host': host,
+    'port': 443,
+  }],
+  http_auth=awsauth,
+  use_ssl=True,
+  verify_certs=True,
+  connection_class=RequestsHttpConnection
+  )
+
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
@@ -52,7 +69,7 @@ def load_user(id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', articles = articles)
 
 
 @app.route('/logout')
@@ -91,6 +108,28 @@ def build_post_string(user_posts):
             giant_string += " "
 
     return giant_string
+def get_rand_indexes(max_index):
+    value1 = random.randrange(1, max_index)
+    value2 = random.randrange(1, max_index)
+    return value1, value2
+
+def get_articles_from_elasticsearch(topics):
+    articles = []#each includes a title and a link
+    print("getting articles")
+    for topic in topics:
+        res = es.search(size=50, index="news", doc_type="article", body={
+            "query": {
+                "match": {
+                    "topicNo": str(topic)
+                }
+            }
+        })
+        results = res['hits']['hits']
+        max_index = len(results)
+        index1, index2 = get_rand_indexes(max_index)
+        articles.append(("title", results[index1]['_source']['text']))
+        articles.append(("title", results[index2]['_source']['text']))
+    return articles
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
@@ -110,7 +149,11 @@ def oauth_callback(provider):
                 pass
         post_string = build_post_string(user_posts)
         send_data = {'content': post_string}
-        requests.post("http://127.0.0.1:5000/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+        #response = requests.post("http://127.0.0.1:5000/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+        #topics = retrieve them from response somehow
+        topics = [4,6,7,8,5]
+
+        articles = get_articles_from_elasticsearch(topics)
 
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
@@ -118,23 +161,7 @@ def oauth_callback(provider):
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
-    return redirect(url_for('index'))
-
-awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, "us-east-1", 'es')
-
-host =  os.environ['ES_URL']
-port =  os.environ['ES_PORT']
-
-es = Elasticsearch(
-  hosts=[{
-    'host': host,
-    'port': int(port),
-  }],
-  http_auth=awsauth,
-  use_ssl=True,
-  verify_certs=True,
-  connection_class=RequestsHttpConnection
-  )
+    return render_template('index.html', articles=articles)
 
 @app.route('/')
 def login():
