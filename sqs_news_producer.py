@@ -76,6 +76,14 @@ def fetchArticles(sources):
               article[v] = article[v].encode('ascii', 'ignore')
           article["category"] = str(category)
           article["source"] = str(source)
+          if (article['author'] == ''):
+            article['author'] = 'Unknown'
+
+          # if (article['description'] == ''):
+          #   article['description'] = 'Unknown'
+
+          if (article['urlToImage'] == ''):
+            article['urlToImage'] = 'https://exposure.imgix.net/production/photos/fv0hxg49ygsos845j8z8y3nmi8rrisjthpli/original.jpg'
 
           # print(article)
           ## add indexing to ES
@@ -109,7 +117,7 @@ def fetchArticles(sources):
                 'DataType': 'String'
               },
               'Author': {
-                'StringValue': '{}'.format(article["author"]),
+                'StringValue': '{}'.format(article['author']),
                 'DataType': 'String'
               },
               'Source': {
@@ -121,7 +129,7 @@ def fetchArticles(sources):
                 'DataType': 'String'
               },
               'UrlToImage': {
-                'StringValue': '{}'.format(article["urlToImage"]),
+                'StringValue': '{}'.format(article.get("urlToImage", "https://exposure.imgix.net/production/photos/fv0hxg49ygsos845j8z8y3nmi8rrisjthpli/original.jpg")),
                 'DataType': 'String'
               }
             })
@@ -151,7 +159,7 @@ if __name__ == '__main__':
 
   while(1):
     fetchArticles(sources)
-    # time.sleep(3600)   # EVERY 60 MINUTES
+    time.sleep(3600)   # EVERY 60 MINUTES
 
 
 # URL
