@@ -163,11 +163,6 @@ def oauth_callback(provider):
     login_user(user, True)
     return render_template('index.html', articles=articles)
 
-@app.route('/')
-def login():
-    return "Hello"
-
-
 @app.route('/es')
 def test_es():
     result = es.search(index='news',doc_type="article",body={
