@@ -4,21 +4,14 @@ import json
 import time
 from requests_aws4auth import AWS4Auth
 from elasticsearch import Elasticsearch, RequestsHttpConnection
-# from config import *
+from config import *
 import sys
 import boto3
 
 
-# REGION = "us-west-2"
+REGION = "us-west-2"
 
-YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
-YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
-
-
-
-APIKEY = ""
-
-awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, "us-east-1", 'sqs')
+awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, REGION, 'sqs')
 # awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, "us-east-1", 'es')
 
 # host = os.environ['ES_URL']
@@ -58,9 +51,12 @@ sources = {
 def fetchArticles(sources):
   count = 0
   for category in sources.keys():
+    print("Getting {}").format(category)
     source_list = sources[category]
     for source in source_list:
+      print("Getting {}").format(source)
       request_url = "https://newsapi.org/v1/articles?source={source}&apiKey={apiKey}".format(source=source, apiKey=APIKEY)
+      print request_url
       try:
         resp = requests.get(request_url)
       except:
@@ -80,6 +76,14 @@ def fetchArticles(sources):
               article[v] = article[v].encode('ascii', 'ignore')
           article["category"] = str(category)
           article["source"] = str(source)
+          if (article['author'] == ''):
+            article['author'] = 'Unknown'
+
+          # if (article['description'] == ''):
+          #   article['description'] = 'Unknown'
+
+          if (article['urlToImage'] == ''):
+            article['urlToImage'] = 'https://exposure.imgix.net/production/photos/fv0hxg49ygsos845j8z8y3nmi8rrisjthpli/original.jpg'
 
           # print(article)
           ## add indexing to ES
@@ -97,7 +101,7 @@ def fetchArticles(sources):
             queue = sqs.get_queue_by_name(QueueName=queue_name)
 
             print("this is the queue {}").format(queue)
-            queue.send_message(MessageBody="hoohoho")
+            # queue.send_message(MessageBody="hoohoho")
             # res = queue.send_message(MessageBody=str(data["text"]), MessageAttributes={'tweet': 'yes'})
             res = queue.send_message(MessageBody=str(article["title"]).encode('ascii', 'ignore'), MessageAttributes={
               'Description': {
@@ -113,7 +117,7 @@ def fetchArticles(sources):
                 'DataType': 'String'
               },
               'Author': {
-                'StringValue': '{}'.format(article["author"]),
+                'StringValue': '{}'.format(article['author']),
                 'DataType': 'String'
               },
               'Source': {
@@ -125,14 +129,14 @@ def fetchArticles(sources):
                 'DataType': 'String'
               },
               'UrlToImage': {
-                'StringValue': '{}'.format(article["urlToImage"]),
+                'StringValue': '{}'.format(article.get("urlToImage", "https://exposure.imgix.net/production/photos/fv0hxg49ygsos845j8z8y3nmi8rrisjthpli/original.jpg")),
                 'DataType': 'String'
               }
             })
             print(res.get('MessageId'))
 
             # res = es.index(index="test", doc_type='tweet', body=str(data))
-            print("Message sent?")
+            print("Message sent")
 
             # dup = es.get(index="news", doc_type='article', id=article["title"])
             # print("Article ")

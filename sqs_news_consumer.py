@@ -4,6 +4,7 @@ import pprint
 import boto3
 import re
 import sys
+import time
 
 
 # Get the service resource
@@ -28,20 +29,24 @@ def sns_connect():
     subscriber = client.subscribe(
         TopicArn=topicarn,
         Protocol='http' ,
+        Endpoint='http://4a40829d.ngrok.io/notification'
         #Endpoint='http://127.0.0.1:5000/notification' 108.6.175.225
-        Endpoint='http://c725a958.ngrok.io'
+        # Endpoint='http://c725a958.ngrok.io'
         # Endpoint = 'flask-env.5gi2k9npmn.us-west-2.elasticbeanstalk.com/notification'
     )
     print(("Subscriber: {}\n").format(subscriber))
 
 sns_connect()
-
+count = 0
 while(1):
 
   # Process messages by printing out body and optional author name
   for message in queue.receive_messages(MessageAttributeNames=['All']):
       if message.message_attributes is not None:
+        if (count % 15 == 0 and count != 0):
+          print("\nSLEEPING\n")
 
+          time.sleep(60)
         title = message.body
         description = message.message_attributes.get('Description').get('StringValue')
         author = message.message_attributes.get('Author').get('StringValue')
@@ -77,6 +82,7 @@ while(1):
               MessageStructure='string'
           )
           print("We published something!")
+          count +=1
           # client.confirm_subsciption(str(req["TopicArn"]), str(req["Token"]))
           # res = es.index(index="tweet-sqs", doc_type='tweet', body=data)
 

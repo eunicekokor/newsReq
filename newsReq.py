@@ -15,6 +15,8 @@ from requests_aws4auth import AWS4Auth
 from flask_oauth import OAuth
 from oauth import OAuthSignIn
 from facebook_post import facebook_post
+from config import *
+import sns_receiver as sns
 
 YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
 YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
@@ -173,6 +175,18 @@ def test_es():
     })
     data = json.dumps(result['hits']['hits'])
     return data
+
+@app.route('/notification', methods=['GET','POST'])
+def notification():
+  print(request.method)
+  if (request.method == "POST"):
+    print(request)
+    try:
+      sns.notification(request.data)
+    except:
+      print("Unexpected error:", sys.exc_info())
+      pass
+  return "test"
 
 if __name__ == '__main__':
     db.create_all()
