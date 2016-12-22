@@ -12,8 +12,14 @@
 
             {% for article in articles %}
             <div>
-                <h3>{{ article[0] }}</h3>
-                <p>{{ article[1] }}</p>
+            <img width="400px" height="200px" src="{{ article.urlToImage}}">
+            </div>
+            <div>
+                <h3>{{ article.title }}</h3>
+                <p> by {{article.author}} at {{article.publishedAt}}
+                {{ article.description }}
+                </p>
+                <p>Read Full Story: {{ article.url }}</p>
             </div>
             {% endfor %}
 

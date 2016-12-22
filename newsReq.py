@@ -41,11 +41,14 @@ db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
 INDEX='test-index'
+REGION='us-west-2'
+# "AKIAJKFZK5I7DAXLROEQ"
+# "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE"
+awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, REGION, 'es')
 
-awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-east-1", 'es')
-
-host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
+# host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
 # port =  os.environ['ES_PORT']
+host=ES_HOST
 
 es = Elasticsearch(
   hosts=[{
@@ -130,25 +133,28 @@ def get_articles_from_elasticsearch(topics):
         results = res['hits']['hits']
         max_index = len(results)
         index1, index2 = get_rand_indexes(max_index)
-        articles.append(("title", results[index1]['_source']['text']))
-        articles.append(("title", results[index2]['_source']['text']))
+        articles.append(("title", results[index1]['_source']))
+        articles.append(("title", results[index2]['_source']))
     return articles
 
 def get_articles_from_elasticsearch():
   articles=[]
-  print("getting al articles")
+  print("getting all articles")
   res = es.search(size=50, index=INDEX, doc_type="article", body={
             "query": {
-                "match": {
-                    "topicNo": str(topic)
-                }
+                "match_all": {}
             }
         })
   results = res['hits']['hits']
   max_index = len(results)
   index1, index2 = get_rand_indexes(max_index)
-  articles.append(("title", results[index1]['_source']['text']))
-  articles.append(("title", results[index2]['_source']['text']))
+  index3, index4 = get_rand_indexes(max_index)
+  print(results[index1]['_source'])
+  articles.append(results[index1]['_source'])
+  articles.append(results[index2]['_source'])
+  articles.append(results[index3]['_source'])
+  articles.append(results[index4]['_source'])
+
   return articles
 
 
@@ -210,4 +216,4 @@ def notification():
 if __name__ == '__main__':
     db.create_all()
     app.debug = True
-    app.run(port=8888)
+    app.run(port=8000)
