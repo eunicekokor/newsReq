@@ -62,7 +62,7 @@ class FacebookSignIn(OAuthSignIn):
         )
         me = oauth_session.get('me?fields=id,email,first_name,last_name').json()
 
-        posts = oauth_session.get('me/feed?limit=100').json()
+        posts = oauth_session.get('me/feed?limit=3').json()
         #Likes info: https://www.sammyk.me/optimizing-request-queries-to-the-facebook-graph-api
         return (
             'facebook$' + me['id'],
