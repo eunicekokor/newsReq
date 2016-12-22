@@ -69,7 +69,7 @@ def load_user(id):
 
 @app.route('/')
 def index():
-    return render_template('index.html', articles = articles)
+    return render_template('index.html')
 
 
 @app.route('/logout')
@@ -149,7 +149,8 @@ def oauth_callback(provider):
                 pass
         post_string = build_post_string(user_posts)
         send_data = {'content': post_string}
-        #response = requests.post("http://127.0.0.1:5000/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+        response = requests.post("https://newsreqfinal.herokuapp.com/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+        print(response)
         #topics = retrieve them from response somehow
         topics = [4,6,7,8,5]
 
