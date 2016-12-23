@@ -38,7 +38,7 @@ db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
 
-
+awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-west-2", 'es')
 
 host =  "search-newsreq-6xkhjq5amuh5hzynlndttavldi.us-west-2.es.amazonaws.com"
 
