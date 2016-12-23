@@ -78,7 +78,7 @@ def index():
         })
         print(result['hits']['hits'][0]['_source']['favorite_topics'])
         favorite_topics = json.loads(result['hits']['hits'][0]['_source']['favorite_topics'])
-        favorite_topics = [0,0,0,0,0]
+        #favorite_topics = [0,0,0,0,0]
         articles = get_articles_from_elasticsearch(favorite_topics)
     else:
         articles = []
@@ -131,6 +131,8 @@ def get_articles_from_elasticsearch(topics):
     articles = []#each includes a title and a link
     print("getting articles")
     for topic in topics:
+        print("TOPIC:")
+        print(topic)
         res = es.search(size=50, index="test-index", doc_type="article", body={
             "query": {
                 "match": {
@@ -140,10 +142,30 @@ def get_articles_from_elasticsearch(topics):
         })
         results = res['hits']['hits']
         print(results)
+        if len(res['hits']['hits']) == 0:
+            continue
         max_index = len(results)
         index1, index2 = get_rand_indexes(max_index)
         article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"], results[index1]['_source']["url"], results[index1]['_source']["description"])
         article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"], results[index2]['_source']["url"], results[index2]['_source']["description"])
+        if article_1 not in articles:
+            articles.append(article_1)
+        if article_2 not in articles:
+            articles.append(article_2)
+        index1, index2 = get_rand_indexes(max_index)
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"],
+                     results[index1]['_source']["url"], results[index1]['_source']["description"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"],
+                     results[index2]['_source']["url"], results[index2]['_source']["description"])
+        if article_1 not in articles:
+            articles.append(article_1)
+        if article_2 not in articles:
+            articles.append(article_2)
+        index1, index2 = get_rand_indexes(max_index)
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"],
+                     results[index1]['_source']["url"], results[index1]['_source']["description"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"],
+                     results[index2]['_source']["url"], results[index2]['_source']["description"])
         if article_1 not in articles:
             articles.append(article_1)
         if article_2 not in articles:
