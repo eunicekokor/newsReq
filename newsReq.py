@@ -15,11 +15,8 @@ from requests_aws4auth import AWS4Auth
 from flask_oauth import OAuth
 from oauth import OAuthSignIn
 from facebook_post import facebook_post
-from config import *
 import sns_receiver as sns
 
-YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
-YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
 
 oauth = OAuth()
 
@@ -43,8 +40,7 @@ lm.login_view = 'index'
 
 awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-east-1", 'es')
 
-host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
-port =  os.environ['ES_PORT']
+host =  "search-newsreq-6xkhjq5amuh5hzynlndttavldi.us-west-2.es.amazonaws.com"
 
 es = Elasticsearch(
   hosts=[{
@@ -151,7 +147,7 @@ def oauth_callback(provider):
                 pass
         post_string = build_post_string(user_posts)
         send_data = {'content': post_string}
-        response = requests.post("https://newsreqfinal.herokuapp.com/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+        response = requests.post("localhost:5000/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
         print(response)
         #topics = retrieve them from response somehow
         topics = [4,6,7,8,5]
