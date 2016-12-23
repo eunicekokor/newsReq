@@ -15,7 +15,7 @@ from requests_aws4auth import AWS4Auth
 from flask_oauth import OAuth
 from oauth import OAuthSignIn
 from facebook_post import facebook_post
-import sns_receiver as sns
+#import sns_receiver as sns
 
 
 oauth = OAuth()
@@ -38,7 +38,7 @@ db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
 
-awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-east-1", 'es')
+awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-west-2", 'es')
 
 host =  "search-newsreq-6xkhjq5amuh5hzynlndttavldi.us-west-2.es.amazonaws.com"
 
@@ -147,8 +147,8 @@ def oauth_callback(provider):
                 pass
         post_string = build_post_string(user_posts)
         send_data = {'content': post_string}
-        response = requests.post("localhost:5000/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
-        print(response)
+        response = requests.post("http://c9b4dbd0.ngrok.io/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+        print(response.text)
         #topics = retrieve them from response somehow
         topics = [4,6,7,8,5]
 
@@ -172,17 +172,6 @@ def test_es():
     data = json.dumps(result['hits']['hits'])
     return data
 
-@app.route('/notification', methods=['GET','POST'])
-def notification():
-  print(request.method)
-  if (request.method == "POST"):
-    print(request)
-    try:
-      sns.notification(request.data)
-    except:
-      print("Unexpected error:", sys.exc_info())
-      pass
-  return "test"
 
 if __name__ == '__main__':
     db.create_all()

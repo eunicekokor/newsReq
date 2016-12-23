@@ -1,20 +1,19 @@
 import boto3
 from elasticsearch import Elasticsearch, RequestsHttpConnection
 import json
-from config import *
 import sys
 import pprint
 import ast
 from requests_aws4auth import AWS4Auth
 
 REGION="us-west-2"
-awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, REGION, 'es')
+awsauth = AWS4Auth("qcAuLjDQ6MkwobK2ThEvWjiY8", "qcAuLjDQ6MkwobK2ThEvWjiY8", "us-west-2", 'es')
 # host = "search-tweet-trends-euni-bv5nxkgvthtwhgtrq6grokr4oi.us-west-2.es.amazonaws.com"
 # host = "search-tweet-trends-24sebrx4nnqqvhbh3c737rotcq.us-west-2.es.amazonaws.com"
 global es
 es = Elasticsearch(
   hosts=[{
-    'host': ES_HOST,
+    'host': "search-newsreq-6xkhjq5amuh5hzynlndttavldi.us-west-2.es.amazonaws.com",
     'port': 443,
   }],
   http_auth=awsauth,
