@@ -175,5 +175,5 @@ def test_es():
 
 if __name__ == '__main__':
     db.create_all()
-    app.debug = True
-    app.run(port=8000)
+    #app.debug = True
+    app.run(host='0.0.0.0')
