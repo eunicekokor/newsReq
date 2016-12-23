@@ -42,8 +42,6 @@ lm = LoginManager(app)
 lm.login_view = 'index'
 INDEX='test-index'
 REGION='us-west-2'
-# "AKIAJKFZK5I7DAXLROEQ"
-# "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE"
 awsauth = AWS4Auth(YOUR_ACCESS_KEY, YOUR_SECRET_KEY, REGION, 'es')
 
 # host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
