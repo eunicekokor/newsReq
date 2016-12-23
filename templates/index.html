@@ -11,6 +11,11 @@
 
     </head>
     <body>
+    <style>
+red {
+  color: green;
+}
+</style>
     <nav style="color: white" class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
         <div class="navbar-header">
@@ -69,16 +74,14 @@
             {% for article in articles %}
             <div class="col-md-4">
                 <img src="{{ article[1] }}" alt="Mountain View" style="width:304px;height:228px;">
-                <h2>{{ article[0] }}</h2>
-                <p><i class="fa fa-user" aria-hidden="true"></i>by {{article[4]}}</p>
+                <h2>{{ article[0] }} <i class="fa fa-thumbs-o-up" aria-hidden="true"></i></h2>
+                <p><i class="fa fa-user" aria-hidden="true"></i> {{article[4]}}</p>
                 <p>{{ article[3] }}</p>
                 <div class="form-group">
                 <p>
 
-                {{article[5]}}
-                {{article[6]}}
                   <a class="btn btn-default" href="{{ article[2] }}">Read More</a>
-                  <a class="btn btn-default" href="#"><i id="like-{{article[0]}}" class="fa fa-thumbs-o-up" aria-hidden="true"></i></a>
+
                 </p>
                 </div>
             </div>
@@ -97,8 +100,8 @@
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 <script>
-$('.fa').click({
-  console.log("hello");
+$( ".fa-thumbs-o-up" ).click(function() {
+  $(this).css("color","green");
 });
 
 </script>
