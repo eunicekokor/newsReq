@@ -67,7 +67,23 @@ def load_user(id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    #articles = get_articles_from_elasticsearch(topics)
+    if not current_user.is_anonymous:
+        print("The user is " + current_user.nickname)
+        result = es.search(index='user', doc_type="existing_users", body={
+            "query": {
+                "match": {
+                    "username": str(current_user.nickname)
+                }}
+        })
+        print(result['hits']['hits'][0]['_source']['favorite_topics'])
+        favorite_topics = json.loads(result['hits']['hits'][0]['_source']['favorite_topics'])
+        favorite_topics = [0,0,0,0,0]
+        articles = get_articles_from_elasticsearch(favorite_topics)
+    else:
+        articles = []
+
+    return render_template('index.html', articles=articles)
 
 
 @app.route('/logout')
@@ -115,7 +131,7 @@ def get_articles_from_elasticsearch(topics):
     articles = []#each includes a title and a link
     print("getting articles")
     for topic in topics:
-        res = es.search(size=50, index="news", doc_type="article", body={
+        res = es.search(size=50, index="test-index", doc_type="article", body={
             "query": {
                 "match": {
                     "topicNo": str(topic)
@@ -123,11 +139,30 @@ def get_articles_from_elasticsearch(topics):
             }
         })
         results = res['hits']['hits']
+        print(results)
         max_index = len(results)
         index1, index2 = get_rand_indexes(max_index)
-        articles.append(("title", results[index1]['_source']['text']))
-        articles.append(("title", results[index2]['_source']['text']))
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"], results[index1]['_source']["url"], results[index1]['_source']["description"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"], results[index2]['_source']["url"], results[index2]['_source']["description"])
+        if article_1 not in articles:
+            articles.append(article_1)
+        if article_2 not in articles:
+            articles.append(article_2)
+
     return articles
+
+def user_exists(username):
+    result = es.search(index='user', doc_type="existing_users", body={
+        "query": {
+            "match": {
+                "username": str(username)
+            }}
+    })
+
+    if len(result['hits']['hits']) > 0:
+        return True
+    else:
+        return False
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
@@ -139,19 +174,37 @@ def oauth_callback(provider):
         flash('Authentication failed.')
         return redirect(url_for('index'))
     else:
-        user_posts = []
-        for post in posts['data']:
+
+        if not user_exists(username):
+
+            user_posts = []
+            for post in posts['data']:
+                try:
+                    user_posts.append(facebook_post(post))
+                except:
+                    pass
+            post_string = build_post_string(user_posts)
+            send_data = {'content': post_string}
+            response = requests.post("http://c9b4dbd0.ngrok.io/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+
+            response_dict = json.loads(response.text)
+
+            user_topics = []
+            user_topics.append(response_dict["topicNo1"])
+            user_topics.append(response_dict["topicNo2"])
+            user_topics.append(response_dict["topicNo3"])
+            user_topics.append(response_dict["topicNo4"])
+            user_topics.append(response_dict["topicNo5"])
+
+            print(user_topics)
+
             try:
-                user_posts.append(facebook_post(post))
+                es.index(index='user', doc_type='existing_users', body={
+                    'username': username,
+                    'favorite_topics': json.dumps(user_topics),
+                })
             except:
-                pass
-        post_string = build_post_string(user_posts)
-        send_data = {'content': post_string}
-        response = requests.post("http://c9b4dbd0.ngrok.io/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
-
-        topics = [int(response.text)]
-
-        articles = get_articles_from_elasticsearch(topics)
+                print('User already exists')
 
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
@@ -159,7 +212,9 @@ def oauth_callback(provider):
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
-    return render_template('index.html', articles=articles)
+
+
+    return redirect(url_for('index'))
 
 @app.route('/es')
 def test_es():

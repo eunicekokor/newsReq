@@ -12,8 +12,10 @@
 
             {% for article in articles %}
             <div>
+                <img src="{{ article[1] }}" alt="Mountain View" style="width:304px;height:228px;">
                 <h3>{{ article[0] }}</h3>
-                <p>{{ article[1] }}</p>
+                <p>{{ article[3] }}</p>
+                <p>Read More: <a href="{{ article[2] }}">HERE</a></p>
             </div>
             {% endfor %}
 
