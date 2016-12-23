@@ -148,9 +148,8 @@ def oauth_callback(provider):
         post_string = build_post_string(user_posts)
         send_data = {'content': post_string}
         response = requests.post("http://c9b4dbd0.ngrok.io/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
-        print(response.text)
-        #topics = retrieve them from response somehow
-        topics = [4,6,7,8,5]
+
+        topics = [int(response.text)]
 
         articles = get_articles_from_elasticsearch(topics)
 
