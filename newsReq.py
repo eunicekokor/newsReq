@@ -15,11 +15,8 @@ from requests_aws4auth import AWS4Auth
 from flask_oauth import OAuth
 from oauth import OAuthSignIn
 from facebook_post import facebook_post
-from config import *
-import sns_receiver as sns
+#import sns_receiver as sns
 
-YOUR_ACCESS_KEY = os.environ['CONSUMER_KEY']
-YOUR_SECRET_KEY = os.environ['CONSUMER_SECRET']
 
 oauth = OAuth()
 
@@ -41,10 +38,9 @@ db = SQLAlchemy(app)
 lm = LoginManager(app)
 lm.login_view = 'index'
 
-awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-east-1", 'es')
+awsauth = AWS4Auth("AKIAJKFZK5I7DAXLROEQ", "KkUpDYrGL7maWIdo6MCTvWy1qSiEEnuqrxiCBCgE", "us-west-2", 'es')
 
-host =  "search-news-c4aykocrhzke4pf6yvrzdu5zbe.us-east-1.es.amazonaws.com"
-port =  os.environ['ES_PORT']
+host =  "search-newsreq-6xkhjq5amuh5hzynlndttavldi.us-west-2.es.amazonaws.com"
 
 es = Elasticsearch(
   hosts=[{
@@ -71,7 +67,23 @@ def load_user(id):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    #articles = get_articles_from_elasticsearch(topics)
+    if not current_user.is_anonymous:
+        print("The user is " + current_user.nickname)
+        result = es.search(index='user', doc_type="existing_users", body={
+            "query": {
+                "match": {
+                    "username": str(current_user.nickname)
+                }}
+        })
+        print(result['hits']['hits'][0]['_source']['favorite_topics'])
+        favorite_topics = json.loads(result['hits']['hits'][0]['_source']['favorite_topics'])
+        #favorite_topics = [0,0,0,0,0]
+        articles = get_articles_from_elasticsearch(favorite_topics)
+    else:
+        articles = []
+
+    return render_template('index.html', articles=articles)
 
 
 @app.route('/logout')
@@ -117,9 +129,12 @@ def get_rand_indexes(max_index):
 
 def get_articles_from_elasticsearch(topics):
     articles = []#each includes a title and a link
+    topics.append(0)
     print("getting articles")
     for topic in topics:
-        res = es.search(size=50, index="news", doc_type="article", body={
+        print("TOPIC:")
+        print(topic)
+        res = es.search(size=50, index="test-index", doc_type="article", body={
             "query": {
                 "match": {
                     "topicNo": str(topic)
@@ -127,11 +142,50 @@ def get_articles_from_elasticsearch(topics):
             }
         })
         results = res['hits']['hits']
+        print(results)
+        if len(res['hits']['hits']) == 0:
+            continue
         max_index = len(results)
         index1, index2 = get_rand_indexes(max_index)
-        articles.append(("title", results[index1]['_source']['text']))
-        articles.append(("title", results[index2]['_source']['text']))
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"], results[index1]['_source']["url"], results[index1]['_source']["description"], results[index2]['_source']["author"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"], results[index2]['_source']["url"], results[index2]['_source']["description"], results[index2]['_source']["author"])
+        if article_1 not in articles:
+            articles.append(article_1)
+        if article_2 not in articles:
+            articles.append(article_2)
+        index1, index2 = get_rand_indexes(max_index)
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"],
+                     results[index1]['_source']["url"], results[index1]['_source']["description"], results[index2]['_source']["author"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"],
+                     results[index2]['_source']["url"], results[index2]['_source']["description"], results[index2]['_source']["author"])
+        if article_1 not in articles:
+            articles.append(article_1)
+        if article_2 not in articles:
+            articles.append(article_2)
+        index1, index2 = get_rand_indexes(max_index)
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"],
+                     results[index1]['_source']["url"], results[index1]['_source']["description"], results[index2]['_source']["author"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"],
+                     results[index2]['_source']["url"], results[index2]['_source']["description"], results[index2]['_source']["author"])
+        if article_1 not in articles:
+            articles.append(article_1)
+        if article_2 not in articles:
+            articles.append(article_2)
+
     return articles
+
+def user_exists(username):
+    result = es.search(index='user', doc_type="existing_users", body={
+        "query": {
+            "match": {
+                "username": str(username)
+            }}
+    })
+
+    if len(result['hits']['hits']) > 0:
+        return True
+    else:
+        return False
 
 @app.route('/callback/<provider>')
 def oauth_callback(provider):
@@ -143,20 +197,37 @@ def oauth_callback(provider):
         flash('Authentication failed.')
         return redirect(url_for('index'))
     else:
-        user_posts = []
-        for post in posts['data']:
-            try:
-                user_posts.append(facebook_post(post))
-            except:
-                pass
-        post_string = build_post_string(user_posts)
-        send_data = {'content': post_string}
-        response = requests.post("https://newsreqfinal.herokuapp.com/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
-        print(response)
-        #topics = retrieve them from response somehow
-        topics = [4,6,7,8,5]
 
-        articles = get_articles_from_elasticsearch(topics)
+        if not user_exists(username):
+
+            user_posts = []
+            for post in posts['data']:
+                try:
+                    user_posts.append(facebook_post(post))
+                except:
+                    pass
+            post_string = build_post_string(user_posts)
+            send_data = {'content': post_string}
+            response = requests.post("http://c9b4dbd0.ngrok.io/getUserTopic", data=json.dumps(send_data), headers={'content-type': 'application/json'})
+
+            response_dict = json.loads(response.text)
+
+            user_topics = []
+            user_topics.append(response_dict["topicNo1"])
+            user_topics.append(response_dict["topicNo2"])
+            user_topics.append(response_dict["topicNo3"])
+            user_topics.append(response_dict["topicNo4"])
+            user_topics.append(response_dict["topicNo5"])
+
+            print(user_topics)
+
+            try:
+                es.index(index='user', doc_type='existing_users', body={
+                    'username': username,
+                    'favorite_topics': json.dumps(user_topics),
+                })
+            except:
+                print('User already exists')
 
     user = User.query.filter_by(social_id=social_id).first()
     if not user:
@@ -164,7 +235,9 @@ def oauth_callback(provider):
         db.session.add(user)
         db.session.commit()
     login_user(user, True)
-    return render_template('index.html', articles=articles)
+
+
+    return redirect(url_for('index'))
 
 @app.route('/es')
 def test_es():
@@ -176,19 +249,8 @@ def test_es():
     data = json.dumps(result['hits']['hits'])
     return data
 
-@app.route('/notification', methods=['GET','POST'])
-def notification():
-  print(request.method)
-  if (request.method == "POST"):
-    print(request)
-    try:
-      sns.notification(request.data)
-    except:
-      print("Unexpected error:", sys.exc_info())
-      pass
-  return "test"
 
 if __name__ == '__main__':
     db.create_all()
-    app.debug = True
-    app.run(port=8000)
+    #app.debug = True
+    app.run(host='0.0.0.0')
