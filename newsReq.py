@@ -129,6 +129,7 @@ def get_rand_indexes(max_index):
 
 def get_articles_from_elasticsearch(topics):
     articles = []#each includes a title and a link
+    topics.append(0)
     print("getting articles")
     for topic in topics:
         print("TOPIC:")
