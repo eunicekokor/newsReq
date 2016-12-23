@@ -1,28 +1,105 @@
 <html>
     <head>
         <title>ANF</title>
+        <!-- Latest compiled and minified CSS -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+<!-- Optional theme -->
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap-theme.min.css" integrity="sha384-rHyoN1iRsVXV4nD0JutlnGaslCJuC7uwjduW9SVrLvRYooPp2bWYgmgJQIXwl/Sp" crossorigin="anonymous">
+
+<script src="https://use.fontawesome.com/b3aaee7b67.js"></script>
+
     </head>
     <body>
-        <h1>Awesome News Filter</h1>
+    <nav style="color: white" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#">Awesome News Feed || ANF</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <div style="color:white" class="navbar-form navbar-right">
+          {% if current_user.is_authenticated %}
+            <span style="color:white">Hi, {{ current_user.nickname }}!</span>
+                 <button class="btn btn-default"><a href="{{ url_for('logout') }}">Logout</a></button>
+        {% else %}
+            <button class="btn btn-default">Please Login to Facebook</button>
+            <button class="btn btn-default"><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a></button>
+        {% endif %}
+            <!-- <div class="form-group">
+              <input type="text" placeholder="Email" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button> -->
+          </div>
+        </div><!--/.navbar-collapse -->
+      </div>
+    </nav>
+
+
+        <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
+        <br>
+        <br>
+        <br>
+        <h1>Welcome to Awesome News Filter</h1>
+        <p>A Simple Way to Get More News Just For You</p>
+        <p><a class="btn btn-primary btn-lg" href="/" role="button">Get More News!</a></p>
+      </div>
+    </div>
+
+
+
+<div class="container">
+      <!-- Example row of columns -->
+
         {% for message in get_flashed_messages() %}
             <p><b>Error</b>: {{ message }}</p>
         {% endfor %}
-        {% if current_user.is_authenticated %}
-            <h2>Hi, {{ current_user.nickname }}!</h2>
 
+        <div class="row">
             {% for article in articles %}
-            <div>
+            <div class="col-md-4">
                 <img src="{{ article[1] }}" alt="Mountain View" style="width:304px;height:228px;">
-                <h3>{{ article[0] }}</h3>
+                <h2>{{ article[0] }}</h2>
+                <p><i class="fa fa-user" aria-hidden="true"></i>by {{article[4]}}</p>
                 <p>{{ article[3] }}</p>
-                <p>Read More: <a href="{{ article[2] }}">HERE</a></p>
+                <div class="form-group">
+                <p>
+
+                {{article[5]}}
+                {{article[6]}}
+                  <a class="btn btn-default" href="{{ article[2] }}">Read More</a>
+                  <a class="btn btn-default" href="#"><i id="like-{{article[0]}}" class="fa fa-thumbs-o-up" aria-hidden="true"></i></a>
+                </p>
+                </div>
             </div>
             {% endfor %}
+            </div>
+ <hr>
+      <footer>
+        <p>&copy;AJ, Parth, Eunice, Sandra</p>
+      </footer>
+      </div> <!-- /container -->
 
-            <p><a href="{{ url_for('logout') }}">Logout</a></p>
-        {% else %}
-            <h2>Please Login to Facebook</h2>
-            <p><a href="{{ url_for('oauth_authorize', provider='facebook') }}">Login with Facebook</a></p>
-        {% endif %}
     </body>
+    <!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+
+<script>
+$('.fa').click({
+  console.log("hello");
+});
+
+</script>
 </html>

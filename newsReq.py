@@ -147,26 +147,26 @@ def get_articles_from_elasticsearch(topics):
             continue
         max_index = len(results)
         index1, index2 = get_rand_indexes(max_index)
-        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"], results[index1]['_source']["url"], results[index1]['_source']["description"])
-        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"], results[index2]['_source']["url"], results[index2]['_source']["description"])
+        article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"], results[index1]['_source']["url"], results[index1]['_source']["description"], results[index2]['_source']["author"])
+        article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"], results[index2]['_source']["url"], results[index2]['_source']["description"], results[index2]['_source']["author"])
         if article_1 not in articles:
             articles.append(article_1)
         if article_2 not in articles:
             articles.append(article_2)
         index1, index2 = get_rand_indexes(max_index)
         article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"],
-                     results[index1]['_source']["url"], results[index1]['_source']["description"])
+                     results[index1]['_source']["url"], results[index1]['_source']["description"], results[index2]['_source']["author"])
         article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"],
-                     results[index2]['_source']["url"], results[index2]['_source']["description"])
+                     results[index2]['_source']["url"], results[index2]['_source']["description"], results[index2]['_source']["author"])
         if article_1 not in articles:
             articles.append(article_1)
         if article_2 not in articles:
             articles.append(article_2)
         index1, index2 = get_rand_indexes(max_index)
         article_1 = (results[index1]['_source']['title'], results[index1]['_source']["urlToImage"],
-                     results[index1]['_source']["url"], results[index1]['_source']["description"])
+                     results[index1]['_source']["url"], results[index1]['_source']["description"], results[index2]['_source']["author"])
         article_2 = (results[index2]['_source']['title'], results[index2]['_source']["urlToImage"],
-                     results[index2]['_source']["url"], results[index2]['_source']["description"])
+                     results[index2]['_source']["url"], results[index2]['_source']["description"], results[index2]['_source']["author"])
         if article_1 not in articles:
             articles.append(article_1)
         if article_2 not in articles:
