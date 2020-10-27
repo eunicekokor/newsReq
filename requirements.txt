@@ -2,7 +2,7 @@ BeautifulSoup==3.2.1
 certifi==2016.9.26
 chardet==2.3.0
 click==6.6
-cryptography==1.2.3
+cryptography==3.2
 cssselect==1.0.0
 elasticsearch==5.0.1
 enum34==1.1.2
